@@ -250,11 +250,11 @@ class MyClass:
         fig.add_trace(trace2)
         fig.add_trace(trace3)
         fig.add_trace(trace4)
-        fig.update_layout(title='Volcano plot for seronegatives')
+        fig.update_layout(title='Volcano plot')
         fig.show()
 
         # Plot volcano plot with text
-        fig_d1 = px.scatter(df, x='log2FC_1d', y='negative_log_pval_1d', text=df.index)
+        fig_d1 = px.scatter(df, x='log2FC_1d', y='negative_log_pval', text=df.index)
         fig_d1.update_traces(textposition='top center')
-        fig_d1.update_layout(title_text='Volcano plot for seronegatives (day 1)')
+        fig_d1.update_layout(title_text='Volcano plot')
         fig_d1.show()
