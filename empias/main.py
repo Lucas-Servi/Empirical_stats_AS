@@ -6,7 +6,7 @@ import logging
 import pandas as pd
 
 # Import empirical calculation functions
-from empirical_calc import (
+from .empirical_calc import (
     create_replicates_distribution,
     create_between_conditions_distribution,
     calculate_events_pvals_multi

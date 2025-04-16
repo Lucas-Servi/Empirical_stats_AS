@@ -1,0 +1,21 @@
+Metadata-Version: 2.4
+Name: estempias
+Version: 0.2
+Summary: An statistical package for SALMON mapped reads to calculate Alternative splicing changes.
+Author: Lucassg
+Author-email: lucasservi@gmail.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: scipy
+Requires-Dist: plotly
+Requires-Dist: joblib
+Requires-Dist: statsmodels
+Requires-Dist: matplotlib
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: requires-dist
+Dynamic: summary

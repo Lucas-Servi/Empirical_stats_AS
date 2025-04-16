@@ -5,7 +5,7 @@ import scipy.stats as stats
 import plotly.express as px
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-from src import p_adjust_fdr_bh, log2FC_func
+from .src import p_adjust_fdr_bh, log2FC_func
 
 
 class MyClass:
