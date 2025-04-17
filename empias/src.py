@@ -2,31 +2,47 @@ import numpy as np
 
 def p_adjust_fdr_bh(p):
     """
-    Benjamini-Hochberg p-value correction for multiple hypothesis testing.
-    Nan values are replaced by pvalue = 1
-    
-    Return
-    ======
-    Sorted Numpy Array
-    """
-    """Benjamini-Hochberg p-value correction for multiple hypothesis testing."""
-    #p_clean = p[~np.isnan(p)]
-    p_clean = np.asfarray(p)#
-    by_descend = p_clean.argsort()[::-1]
-    by_orig = by_descend.argsort()
-    steps = float(len(p_clean)) / np.arange(len(p_clean), 0, -1)
-    q = np.minimum(1, np.minimum.accumulate(steps * p_clean[by_descend]))
-    return q[by_orig]
+    Perform Benjamini-Hochberg p-value correction (FDR).
 
-def log2FC_func(x, cond1, cond2):
+    Parameters
+    ----------
+    p : array-like
+        List or array of p-values.
+
+    Returns
+    -------
+    numpy.ndarray
+        Adjusted p-values (FDR).
     """
-    Takes a pandas DataFrame and calculates logFC between two
-    conditions
-    
-    Return
-    ======
-    Sorted Numpy Array
+    p = np.asarray(p)
+    n = len(p)
+    ascending_order = np.argsort(p)
+    descending_order = np.argsort(ascending_order)
+    adjusted_p = np.minimum.accumulate((p[ascending_order] * n) / (np.arange(n) + 1))[descending_order]
+    adjusted_p = np.clip(adjusted_p, 0, 1)
+    return adjusted_p
+
+def log2FC_func(df, cond1, cond2):
     """
-    FC = np.mean(x[[cond1]])/np.mean(x[[cond2]])
-    log2FC = np.log2(FC)
-    return log2FC
+    Calculate log2 Fold Change (log2FC) between two conditions.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        DataFrame containing conditions as columns.
+    cond1 : str or tuple
+        Name of the first condition or multiindex column.
+    cond2 : str or tuple
+        Name of the second condition or multiindex column.
+
+    Returns
+    -------
+    pandas.Series
+        Series with log2 fold changes.
+    """
+    mean_cond1 = df[cond1].mean(axis=1)
+    mean_cond2 = df[cond2].mean(axis=1)
+    fc = mean_cond1 / mean_cond2
+    log2fc = np.log2(fc.replace(0, np.nan))
+    log2fc = log2fc.replace([np.inf, -np.inf], np.nan)
+    return log2fc
