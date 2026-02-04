@@ -51,7 +51,7 @@ $$
 ### 2. Local Background Estimation
 
 Variance typically depends on expression abundance (e.g., low-expressed genes are noisier).  
-For each query event with expression level $E$ (log TPM), we dynamically select a **local window** of $N$ (default = 1000) events from the null distribution that have the closest expression levels to $E$.
+For each query event with expression level $E$ (Log2 TPM), we dynamically select a **local window** of $N$ (default = 1000) events from the null distribution that have the closest expression levels to $E$.
 
 ---
 
