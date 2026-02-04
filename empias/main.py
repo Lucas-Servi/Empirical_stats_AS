@@ -25,7 +25,7 @@ def calculate_empirical_pvalue(
     area: int = 1000,
     cutoff: float = 0.5,
     tpm_threshold: float = 1.0,
-    n_workers: int = 4,
+    n_workers: int = -1,
     progress_bar: bool = False,
     condition1: str = "wt",
     condition2: str = "RS31OX"

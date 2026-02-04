@@ -4,7 +4,7 @@ from math import inf
 import scipy.stats as stats
 import plotly.express as px
 import plotly.graph_objects as go
-from .src import p_adjust_fdr_bh, log2FC_func
+from .utils import p_adjust_fdr_bh, log2FC_func
 
 
 class SalmonAnalysis:

@@ -1,0 +1,63 @@
+Metadata-Version: 2.4
+Name: empias
+Version: 0.1.0
+Summary: Empirical p-value calculation for alternative splicing analysis
+Author: Lucassg
+Author-email: User <user@example.com>
+Project-URL: Homepage, https://github.com/Empirical_stats_AS/empias
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: numpy>=1.20
+Requires-Dist: pandas>=1.4
+Requires-Dist: scipy>=1.8
+Requires-Dist: joblib>=1.1
+Requires-Dist: plotly>=5.0
+Requires-Dist: statsmodels>=0.13
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: black; extra == "dev"
+Requires-Dist: isort; extra == "dev"
+Requires-Dist: flake8; extra == "dev"
+Dynamic: author
+
+# Empias
+
+**Emp**irical **I**sofom **A**nalysis **S**oftware.
+
+A Python package to quantify alternative splicing isoforms logFC expression per isoform per gene using empirical p-value calculation.
+
+## Installation
+
+```bash
+pip install .
+```
+
+## Usage
+
+```python
+import pandas as pd
+from empias import calculate_empirical_pvalue
+
+# Load your data
+# Data should be a DataFrame with MultiIndex columns (condition, sample) or specific format
+df = pd.read_csv("expression_data.csv", index_col=0)
+
+# Calculate p-values
+results = calculate_empirical_pvalue(
+    df,
+    condition1="wt",
+    condition2="mutant",
+    n_workers=4
+)
+
+print(results.head())
+```
+
+## Features
+
+- **Empirical P-Value Calculation**: Uses a background distribution of replicates to estimate significance.
+- **Local Distribution**: Compares events to genes with similar expression levels (TPM).
+- **Parallel Processing**: multi-core support for fast calculation.
