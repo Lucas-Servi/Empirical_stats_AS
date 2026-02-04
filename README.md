@@ -39,7 +39,9 @@ This package evaluates the significance of differential expression/splicing usin
 1. **Null Distribution Construction**  
    We approximate the null hypothesis (no biological difference) by calculating the Log2 Fold Changes (LogFC) between all pairs of biological replicates within the same condition. This captures the expected technical and biological noise.
 
-   $$ \Delta_{null} = \log_2\left(\frac{TPM_{rep_i}}{TPM_{rep_j}}\right) $$
+   $$
+   \Delta_{null} = \log_2\left(\frac{TPM_{rep_i}}{TPM_{rep_j}}\right)
+   $$
 
 2. **Local Background Estimation**  
    Variance typically depends on expression abundance (e.g., low-expressed genes are noisier). For each query event with expression level $E$ (Log TPM), we dynamically select a **local window** of $N$ (default 1000) events from the null distribution that have the closest expression levels to $E$.
@@ -47,7 +49,9 @@ This package evaluates the significance of differential expression/splicing usin
 3. **Empirical P-Value Calculation**  
    The p-value is derived by comparing the observed change to the local background noise distribution. We calculate the fraction of background events with an absolute LogFC greater than or equal to the observed absolute LogFC.
 
-   $$ P = \frac{1}{2} \times \frac{\sum_{i=1}^{N} \mathbb{I}(|\Delta_{local, i}| \ge |\Delta_{obs}|)}{N} $$
+   $$
+   P = \frac{1}{2} \times \frac{\sum_{i=1}^{N} \mathbb{I}(|\Delta_{local, i}| \ge |\Delta_{obs}|)}{N}
+   $$
 
    Where:
    - $\mathbb{I}$ is the indicator function.
