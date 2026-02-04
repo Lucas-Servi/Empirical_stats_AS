@@ -148,11 +148,11 @@ def create_replicates_distribution(df: pd.DataFrame) -> np.ndarray:
             # Log FC
             logfc_values = log_fold_change(vals1, vals2)
             
-            # Average log10 TPM
+            # Average log2 TPM (Fixed from log10 to match query scale)
             # Optimization: direct numpy op
             with np.errstate(divide='ignore', invalid='ignore'):
-                log10_vals = np.log10(np.column_stack((vals1, vals2)))
-                avg_log_tpm_mean = np.mean(log10_vals, axis=1)
+                log_vals = np.log2(np.column_stack((vals1, vals2)))
+                avg_log_tpm_mean = np.mean(log_vals, axis=1)
             
             # Combine
             # Filter NaNs later to speed up loop
@@ -191,9 +191,8 @@ def calculate_empirical_pvalue_fast(local_area_abs: np.ndarray, logfc_abs_value:
         return 1.0
         
     # P(random >= observed)
-    # ECDF logic was: (1 - ECDF(obs)) * 0.5 = P(random > obs) * 0.5
-    # Strict inequality > matches (1 - ECDF) because ECDF is <=
-    count = np.sum(local_area_abs > logfc_abs_value)
+    # Standard p-value definition includes the observed value
+    count = np.sum(local_area_abs >= logfc_abs_value)
     return (count / local_area_abs.size) * 0.5
 
 
