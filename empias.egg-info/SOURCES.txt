@@ -1,6 +1,5 @@
 README.md
 pyproject.toml
-setup.py
 empias/__init__.py
 empias/empirical_calc.py
 empias/main.py
@@ -11,3 +10,4 @@ empias.egg-info/SOURCES.txt
 empias.egg-info/dependency_links.txt
 empias.egg-info/requires.txt
 empias.egg-info/top_level.txt
+tests/test_empirical_calc.py

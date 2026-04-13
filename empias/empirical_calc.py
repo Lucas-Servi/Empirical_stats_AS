@@ -6,7 +6,6 @@ between conditions, and calculate empirical p-values using these distributions.
 """
 
 import logging
-from bisect import bisect_left
 from itertools import combinations
 
 import numpy as np
@@ -19,9 +18,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-# Configure numpy to handle specific warnings
-np.seterr(divide='ignore', invalid="ignore")
 
 
 def create_between_conditions_distribution(
@@ -62,8 +58,12 @@ def create_between_conditions_distribution(
              conditions = df.columns.levels[0]
 
     if (condition1 not in df.columns.get_level_values(0)) or (condition2 not in df.columns.get_level_values(0)):
-         # Try to be more flexible if possible, but let's stick to what worked before
-         pass
+        available = list(df.columns.get_level_values(0).unique())
+        raise ValueError(
+            f"Condition(s) not found in DataFrame. "
+            f"Requested: '{condition1}', '{condition2}'. "
+            f"Available: {available}"
+        )
 
     # Log transformation with proper handling of zeros and very small values
     # Use float64 for precision
@@ -204,18 +204,34 @@ def pvalue_calc(
     cutoff: float
 ) -> float:
     """
-    Optimized p-value calculation for a single row.
+    Calculate an empirical p-value for a single isoform.
+
+    Args:
+        row: 1-D array [logFC, log2_tpm_mean] for the isoform being tested.
+             logFC is the between-condition log2 fold change (signed).
+             log2_tpm_mean is used to select a local background window.
+        replicates_logtpms: Sorted 1-D array of log2 TPM values from the null
+                            (within-replicate) distribution. Sorted to enable
+                            binary search for the local window.
+        replicates_logfcs_abs: Absolute log2 FC values paired with
+                               replicates_logtpms (same sort order). Used as
+                               the local null against which the observed
+                               fold change is compared.
+        area: Window size — number of null-distribution points nearest in
+              expression to this isoform that form the local background.
+              Larger area = smoother estimate; default 1000.
+        cutoff: Minimum absolute log2FC required to assign a meaningful p-value.
+                Isoforms with |logFC| < cutoff receive p=1.0 immediately,
+                avoiding noise at low effect sizes.
+
+    Returns:
+        Empirical p-value in (0, 0.5]. Returns 1.0 when the fold change is
+        below the cutoff or the local distribution is empty.
     """
     between_cond_obs_logfc = abs(row[0])
     ev_logtpm = row[1]
-    
-    if -cutoff < row[0] < cutoff: # Check signed value against cutoff logic, original was abs check?
-        # Original: if -cutoff < between_cond_obs_logfc < cutoff:
-        # Wait, between_cond_obs_logfc is ABS(row[0]). 
-        # So -cutoff < abs < cutoff means abs < cutoff.
-        # This simplifies to: if abs(row[0]) < cutoff: return 1.0
-        return 1.0
-        
+
+    # Return p=1.0 for fold changes below the minimum effect-size cutoff.
     if between_cond_obs_logfc < cutoff:
         return 1.0
 
@@ -306,12 +322,16 @@ def calculate_events_pvals_multi(
         except ImportError:
             # Optional: implement simple BH correction if statsmodels missing
             # But we kept statsmodels in pyproject.toml as dependency
-            logger.warning("statsmodels not found for FDR, using basic implementation if available or skipping")
+            logger.warning("statsmodels not found; falling back to internal BH correction")
             try:
                 from .utils import p_adjust_fdr_bh
                 b_c_d_df["fdr"] = p_adjust_fdr_bh(b_c_d_df["pvalues"].values)
-            except Exception:
-                 pass
+            except Exception as fdr_err:
+                logger.error(
+                    f"FDR correction failed with both statsmodels and internal fallback: {fdr_err}. "
+                    "Setting 'fdr' column equal to raw p-values."
+                )
+                b_c_d_df["fdr"] = b_c_d_df["pvalues"]
 
         return b_c_d_df
     

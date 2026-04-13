@@ -18,7 +18,8 @@ def p_adjust_fdr_bh(p):
     n = len(p)
     ascending_order = np.argsort(p)
     descending_order = np.argsort(ascending_order)
-    adjusted_p = np.minimum.accumulate((p[ascending_order] * n) / (np.arange(n) + 1))[descending_order]
+    raw_adjusted = (p[ascending_order] * n) / (np.arange(n) + 1)
+    adjusted_p = np.minimum.accumulate(raw_adjusted[::-1])[::-1][descending_order]
     adjusted_p = np.clip(adjusted_p, 0, 1)
     return adjusted_p
 

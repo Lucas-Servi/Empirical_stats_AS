@@ -1,0 +1,7 @@
+# Pinned versions for reproducibility (Python 3.14, April 2026)
+numpy==2.4.2
+pandas==2.3.3
+scipy==1.17.1
+joblib==1.5.3
+plotly==6.5.2
+statsmodels==0.14.6

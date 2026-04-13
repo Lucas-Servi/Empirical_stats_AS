@@ -8,9 +8,44 @@ from .utils import p_adjust_fdr_bh, log2FC_func
 
 
 class SalmonAnalysis:
-    """Improved class to handle SALMON quantification analysis."""
+    """
+    Load and analyse SALMON transcript quantification output.
+
+    Expected input: one ``quant.sf`` (or equivalent) file per sample,
+    with columns ``Name`` (transcript ID) and ``TPM``.  Sample names must
+    follow the ``treatment_N`` convention (e.g. ``wt_1``, ``wt_2``,
+    ``RS31OX_1``) so that replicates can be grouped automatically.
+
+    Typical workflow::
+
+        sa = SalmonAnalysis()
+        sa.load_data(file_paths, sample_names)
+        sa.merge_replicates()
+        sa.gene_isoform_join(transcriptome="AtRTDv2_1_QUASI.LS.parquet")
+        sa.create_big_df()
+        sa.DESeq2_normalization()
+        sa.filter_by_TPM()
+        sa.welch_t_test_across_treatments()
+        sa.log2FC_across_treatments()
+    """
 
     def __init__(self):
+        """
+        Initialise an empty SalmonAnalysis instance.
+
+        Attributes:
+            data (dict): Maps sample name → raw DataFrame (set by load_data).
+            sample_names (list[str]): Ordered list of sample names.
+            dfs (list[pd.DataFrame]): Raw DataFrames in load order.
+            big_df (pd.DataFrame): Multi-condition DataFrame with a
+                (condition, sample) column MultiIndex, built by create_big_df.
+            big_df_stats (pd.DataFrame): TPM-filtered copy of big_df with
+                appended p-value and log2FC columns.
+            treatments (list[str]): Unique condition names derived from
+                sample_names (e.g. ``["wt", "RS31OX"]``).
+            replicates_dfs (dict): Maps condition name → merged replicate
+                DataFrame (transcript × replicate columns).
+        """
         self.data = {}
         self.sample_names = []
         self.dfs = []
@@ -31,6 +66,20 @@ class SalmonAnalysis:
         return pd.read_csv(file, sep=sep)
 
     def merge_replicates(self):
+        """
+        Group samples by condition and merge their TPM columns.
+
+        Sample names must follow the ``treatment_N`` convention, where the
+        trailing ``_N`` suffix (integer) identifies the replicate number.
+        For example ``wt_1``, ``wt_2``, ``RS31OX_1``, ``RS31OX_2``.
+
+        After calling this method ``self.replicates_dfs`` maps each condition
+        name to a DataFrame indexed by transcript ``Name`` with columns
+        ``sample_1``, ``sample_2``, … (one per replicate).
+
+        Raises:
+            ValueError: If any sample name does not end with an integer suffix.
+        """
         sorted_names = sorted(self.sample_names, key=lambda x: int(x.split('_')[-1]))
         self.treatments = sorted({name.rsplit('_', 1)[0] for name in sorted_names})
 
@@ -45,7 +94,25 @@ class SalmonAnalysis:
             merged_df.set_index('Name', inplace=True)
             self.replicates_dfs[treatment] = merged_df
 
-    def gene_isoform_join(self, transcriptome="AtRTDv2_QUASI.parquet"):
+    def gene_isoform_join(self, transcriptome=None):
+        """
+        Annotate each isoform with its parent gene from the reference transcriptome.
+
+        Args:
+            transcriptome: Path to a Parquet file with at least an ``isoform``
+                column mapping transcript IDs to ``gene`` identifiers
+                (e.g. ``AtRTDv2_1_QUASI.LS.parquet``).  No default — must be
+                supplied explicitly.
+
+        Raises:
+            ValueError: If *transcriptome* is not provided.
+        """
+        if transcriptome is None:
+            raise ValueError(
+                "transcriptome path must be provided. "
+                "Pass the path to the AtRTDv2 Parquet file, e.g. "
+                "gene_isoform_join(transcriptome='AtRTDv2_1_QUASI.LS.parquet')."
+            )
         transcriptome_df = pd.read_parquet(transcriptome)
         for treatment, df in self.replicates_dfs.items():
             merged = transcriptome_df.set_index('isoform').join(df, how='inner')
@@ -101,8 +168,9 @@ class SalmonAnalysis:
     def volcano_plot(self, comparisons):
         fig = go.Figure()
         for label, ratio_col, qval_col in comparisons:
-            log2fc = np.log2(self.big_df[ratio_col])
-            neg_log_pval = -np.log10(self.big_df[qval_col])
+            # ratio_col already contains log2FC values (set by log2FC_across_treatments)
+            log2fc = self.big_df_stats[ratio_col]
+            neg_log_pval = -np.log10(self.big_df_stats[qval_col])
             fig.add_trace(go.Scatter(x=log2fc, y=neg_log_pval, mode='markers', name=label))
         fig.update_layout(title='Volcano plot')
         fig.show()

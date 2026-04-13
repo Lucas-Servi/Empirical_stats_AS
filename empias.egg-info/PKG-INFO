@@ -1,10 +1,9 @@
 Metadata-Version: 2.4
 Name: empias
 Version: 0.1.1
-Summary: Empirical p-value calculation for alternative splicing analysis
-Author: Lucassg
-Author-email: User <user@example.com>
-Project-URL: Homepage, https://github.com/Empirical_stats_AS/empias
+Summary: Empirical p-value algorithm for ONT isoform analysis and alternative splicing quantification in Arabidopsis thaliana
+Author-email: Lucas Servi <lucasservi@gmail.com>
+Project-URL: Homepage, https://github.com/lucasservi/empias
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
@@ -21,7 +20,6 @@ Requires-Dist: pytest; extra == "dev"
 Requires-Dist: black; extra == "dev"
 Requires-Dist: isort; extra == "dev"
 Requires-Dist: flake8; extra == "dev"
-Dynamic: author
 
 # Empias
 

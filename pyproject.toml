@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "empias"
-version = "0.1.1"
-description = "Empirical p-value calculation for alternative splicing analysis"
+version = "1.0.0"
+description = "Empirical p-value algorithm for ONT isoform analysis and alternative splicing quantification in Arabidopsis thaliana"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [
-  {name = "User", email = "user@example.com"},
+  {name = "Lucas Servi", email = "lucasservi@gmail.com"},
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -34,4 +34,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Empirical_stats_AS/empias"
+Homepage = "https://github.com/lucasservi/empias"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["empias*"]
