@@ -34,7 +34,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/lucasservi/empias"
+Homepage = "https://github.com/Lucas-Servi/Empirical_stats_AS"
 
 [tool.setuptools.packages.find]
 where = ["."]
